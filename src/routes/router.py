@@ -4,6 +4,12 @@ from models.Book import Book
 from models.Library import Library
 from typing import List
 
+from handlers.create_book_handler import (
+    create_book_handler,
+    all_books_handler,
+    get_book_handler,
+)
+
 router = APIRouter()
 
 library = Library()
@@ -11,23 +17,20 @@ library = Library()
 
 @router.post("/books/", tags=["create"], response_model=BookResponse)
 def create_book(book: CreateBook):
-    new_book = Book(title=book.title, author=book.author)
-    library.add_book(new_book)
-    return BookResponse(**new_book.__dict__)
+    return create_book_handler(book)
 
 
 @router.get("/books/", tags=["list"], response_model=List[BookResponse])
 def list_all_books():
-    return [BookResponse(**book.__dict__) for book in library.get_all_books()]
+    return all_books_handler()
 
 
 @router.get("/books/{book_id}", tags=["read_book"], response_model=BookResponse)
 def read_book(book_id: str):
-    try:
-        book = library.get_book(book_id)
-        return BookResponse(**book.__dict__)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Livro não encontrado")
+    return get_book_handler(book_id)
+
+
+# continuar criando os proximos handlers para melhorar a estrutura do codigo
 
 
 @router.put("/books/{book_id}", tags=["update"], response_model=BookResponse)
