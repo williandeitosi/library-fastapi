@@ -8,11 +8,12 @@ from handlers.create_book_handler import (
     create_book_handler,
     all_books_handler,
     get_book_handler,
+    update_book_handler,
+    borrow_book_handler,
+    return_book_handler,
 )
 
 router = APIRouter()
-
-library = Library()
 
 
 @router.post("/books/", tags=["create"], response_model=BookResponse)
@@ -30,38 +31,16 @@ def read_book(book_id: str):
     return get_book_handler(book_id)
 
 
-# continuar criando os proximos handlers para melhorar a estrutura do codigo
-
-
 @router.put("/books/{book_id}", tags=["update"], response_model=BookResponse)
-def update_book(book_id, update_book: BookUpdate):
-    try:
-        book = library.get_book(book_id)
-        if update_book.title is not None:
-            book.title = update_book.title
-        if update_book.author is not None:
-            book.author = update_book.author
-        return BookResponse(**book.__dict__)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="Livro não encontrado")
+def update_book(book_id: str, update_book: BookUpdate):
+    return update_book_handler(book_id, update_book)
 
 
 @router.put("/books/{book_id}/borrowed", tags=["borrow"])
 def borrow_book(book_id: str):
-    try:
-        book = library.get_book(book_id)
-        book.borrow()
-        return {"message": "Livro emprestado com sucesso!"}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    return borrow_book_handler(book_id)
 
 
 @router.put("/books/{book_id}/return", tags=["return"])
 def return_book(book_id: str):
-    try:
-        book = library.get_book(book_id)
-        book.return_book()
-        return {"message": "Devolução do livro com sucesso!"}
-    except ValueError as e:
-        print(f"MEU ERRO: ", str(e))
-        raise HTTPException(status_code=404, detail=str(e))
+    return return_book_handler(book_id)
